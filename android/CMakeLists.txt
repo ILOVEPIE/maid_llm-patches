@@ -6,9 +6,8 @@ set(LLAMA_CPP_DIR ${MAID_LLM_SRC_DIR}/llama_cpp)
 set(BUILD_SHARED_LIBS ON)
 set(CMAKE_INSTALL_LIBDIR lib CACHE PATH "library install dir" FORCE)
 
-find_package(Vulkan)
-if (Vulkan_FOUND)
-  add_compile_definitions(GGML_USE_VULKAN)
+if (TARGET vulkan)
+  add_compile_definitions(VK_USE_PLATFORM_ANDROID_KHR=1 GGML_USE_VULKAN)
   set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} Vulkan::Vulkan)
   set(GGML_HEADERS_VULKAN ${LLAMA_CPP_DIR}/ggml/src/ggml-vulkan.h)
   set(GGML_SOURCES_VULKAN ${LLAMA_CPP_DIR}/ggml/src/ggml-vulkan.cpp)
@@ -68,4 +67,8 @@ target_link_options(maid_llm PRIVATE
 # Enable compiler optimizations for arm64-v8a
 if(ANDROID_ABI STREQUAL "arm64-v8a")
   target_compile_options(maid_llm PRIVATE -march=armv8.4-a+fp16+dotprod)
+endif()
+
+if (TARGET vulkan)
+  target_link_libraries(maid_llm PRIVATE vulkan)
 endif()
