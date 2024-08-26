@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
+set(VULKAN_HPP_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vulkan_hpp)
 set(MAID_LLM_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../src)
 set(LLAMA_CPP_DIR ${MAID_LLM_SRC_DIR}/llama_cpp)
 
@@ -8,8 +9,9 @@ set(CMAKE_INSTALL_LIBDIR lib CACHE PATH "library install dir" FORCE)
 
 find_library(VULKAN_LIB vulkan)
 if (DEFINED VULKAN_LIB)
-  add_compile_definitions(VK_USE_PLATFORM_ANDROID_KHR=1 GGML_USE_VULKAN)
-  set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} Vulkan::Vulkan)
+  add_compile_definitions(VK_USE_PLATFORM_ANDROID_KHR=1 VULKAN_HPP_TYPESAFE_CONVERSION GGML_USE_VULKAN)
+  set(EXTRA_SYSTEM_INCLUDES ${VULKAN_HPP_INCLUDE_DIR})
+  set(LLAMA_EXTRA_LIBS ${LLAMA_EXTRA_LIBS} vulkan)
   set(GGML_HEADERS_VULKAN ${LLAMA_CPP_DIR}/ggml/include/ggml-vulkan.h)
   set(GGML_SOURCES_VULKAN ${LLAMA_CPP_DIR}/ggml/src/ggml-vulkan.cpp)
 else()
@@ -35,6 +37,9 @@ add_library(maid_llm SHARED
   ${GGML_SOURCES_VULKAN}
   ${GGML_HEADERS_VULKAN}
 )
+
+#This line adds the missing headers from the android NDK
+target_include_directories(maid_llm SYSTEM PRIVATE ${EXTRA_SYSTEM_INCLUDES})
 
 # Add this line to include the llama_cpp directory
 target_include_directories(maid_llm PRIVATE
@@ -70,6 +75,4 @@ if(ANDROID_ABI STREQUAL "arm64-v8a")
   target_compile_options(maid_llm PRIVATE -march=armv8.4-a+fp16+dotprod)
 endif()
 
-if (DEFINED VULKAN_LIB)
-  target_link_libraries(maid_llm PRIVATE vulkan)
-endif()
+target_link_libraries(maid_llm PRIVATE ${LLAMA_EXTRA_LIBS})

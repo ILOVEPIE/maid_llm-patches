@@ -7,3 +7,6 @@
 [submodule "ios/llama_cpp"]
 	path = ios/llama_cpp
 	url = https://github.com/Mobile-Artificial-Intelligence/llama.cpp.git
+[submodule "android/vulkan_hpp"]
+	path = android/vulkan_hpp
+	url = https://github.com/KhronosGroup/Vulkan-Hpp.git
